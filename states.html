@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>缺省页 · 数字网格系统原型</title>
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/dev-pages.css">
+</head>
+<body class="dev-page">
+<div class="dev-shell">
+  <header class="dev-header">
+    <div class="dev-brand"><span class="dev-mark">网</span><span>数字网格系统 · 缺省页规范</span></div>
+    <nav class="dev-nav">
+      <a class="btn" href="overview.html">页面概览</a>
+      <a class="btn btn-primary" href="index.html">返回总入口</a>
+    </nav>
+  </header>
+
+  <main class="dev-container">
+    <section class="dev-hero">
+      <span class="dev-eyebrow">DEFAULT STATES</span>
+      <h1 class="dev-title">标准缺省页集合</h1>
+      <p class="dev-sub">用于统一开发空数据、无权限、页面不存在、系统异常、网络异常和加载状态。全页缺省用于无法继续操作的场景，局部缺省用于列表或卡片内部。</p>
+      <div class="dev-state-jump">
+        <a href="#state-empty">空数据</a>
+        <a href="#state-search">无搜索结果</a>
+        <a href="#state-denied">无权限</a>
+        <a href="#state-404">页面不存在</a>
+        <a href="#state-error">系统异常</a>
+        <a href="#state-network">网络异常</a>
+        <a href="#state-loading">加载中</a>
+      </div>
+    </section>
+
+    <section class="state-grid" style="margin-top:24px">
+      <article class="state-card" id="state-empty">
+        <div class="state-card-head"><div class="state-card-title">1. 空数据</div><div class="state-card-desc">接口成功返回空集合时使用，例如列表无记录、单位节点下无成员。</div></div>
+        <div class="state-preview"><div class="state-preview-inner"><div class="state-icon">＋</div><div class="state-title">暂无数据</div><div class="state-text">当前还没有可展示的内容，可先创建第一条记录。</div><div class="state-actions"><button class="btn">刷新</button><button class="btn btn-primary">新增记录</button></div></div></div>
+      </article>
+
+      <article class="state-card" id="state-search">
+        <div class="state-card-head"><div class="state-card-title">2. 无搜索结果</div><div class="state-card-desc">有原始数据但筛选或搜索无匹配结果时使用，主操作应为清空筛选。</div></div>
+        <div class="state-preview"><div class="state-preview-inner"><div class="state-icon">⌕</div><div class="state-title">没有找到匹配结果</div><div class="state-text">请尝试更换关键词，或清空筛选条件后重新查询。</div><div class="state-actions"><button class="btn btn-primary">清空筛选</button></div></div></div>
+      </article>
+
+      <article class="state-card" id="state-denied">
+        <div class="state-card-head"><div class="state-card-title">3. 无权限</div><div class="state-card-desc">用户已登录但缺少页面或资源权限时使用，不应与未登录状态混用。</div></div>
+        <div class="state-preview"><div class="state-preview-inner"><div class="state-icon">⌾</div><div class="state-title">暂无访问权限</div><div class="state-text">当前账号没有该页面权限，请联系项目管理员或 JDS 用户配置角色。</div><div class="state-actions"><button class="btn">返回上一页</button><button class="btn btn-primary">联系管理员</button></div></div></div>
+      </article>
+
+      <article class="state-card" id="state-404">
+        <div class="state-card-head"><div class="state-card-title">4. 页面不存在</div><div class="state-card-desc">路由不存在、资源已删除或链接失效时使用。</div></div>
+        <div class="state-preview"><div class="state-preview-inner"><div class="state-icon">404</div><div class="state-title">页面不存在</div><div class="state-text">你访问的页面可能已删除、迁移或地址输入有误。</div><div class="state-actions"><button class="btn">返回上一页</button><button class="btn btn-primary">回到首页</button></div></div></div>
+      </article>
+
+      <article class="state-card" id="state-error">
+        <div class="state-card-head"><div class="state-card-title">5. 系统异常</div><div class="state-card-desc">服务端 5xx 或未知运行时错误时使用，保留重试和返回能力。</div></div>
+        <div class="state-preview"><div class="state-preview-inner"><div class="state-icon">!</div><div class="state-title">系统开小差了</div><div class="state-text">服务暂时不可用，请稍后重试。系统已记录本次异常。</div><div class="state-actions"><button class="btn">返回上一页</button><button class="btn btn-primary">重新加载</button></div></div></div>
+      </article>
+
+      <article class="state-card" id="state-network">
+        <div class="state-card-head"><div class="state-card-title">6. 网络异常</div><div class="state-card-desc">浏览器离线、请求超时或网络中断时使用，重点提供重试反馈。</div></div>
+        <div class="state-preview"><div class="state-preview-inner"><div class="state-icon">↯</div><div class="state-title">网络连接异常</div><div class="state-text">请检查网络连接后重试。已提交的数据以服务端最终状态为准。</div><div class="state-actions"><button class="btn btn-primary">重新连接</button></div></div></div>
+      </article>
+
+      <article class="state-card" id="state-loading">
+        <div class="state-card-head"><div class="state-card-title">7. 加载中</div><div class="state-card-desc">页面首次加载、列表切换项目/工地或大数据请求时使用，优先使用骨架屏。</div></div>
+        <div class="state-preview"><div class="state-preview-inner"><div class="state-skeleton"><div class="state-skel-line" style="width:42%"></div><div class="state-skel-line" style="width:100%"></div><div class="state-skel-line" style="width:88%"></div><div class="state-skel-line" style="width:72%"></div></div><div class="state-title" style="margin-top:14px">正在加载内容</div><div class="state-text">正在加载页面数据，请稍候…</div></div></div>
+      </article>
+    </section>
+
+    <section class="dev-section" id="state-rules">
+      <div class="dev-section-head">
+        <div>
+          <div class="dev-section-title">开发与验收规则</div>
+          <div class="dev-section-sub">统一埋点、操作和样式，避免各模块自行实现不同的缺省状态。</div>
+        </div>
+      </div>
+      <div class="dev-table-wrap">
+        <table class="state-rules">
+          <thead><tr><th>场景</th><th>展示范围</th><th>推荐标题</th><th>主操作</th><th>辅助操作 / 埋点</th></tr></thead>
+          <tbody>
+            <tr><td>空数据</td><td>列表 / 树 / 卡片内部</td><td>暂无数据</td><td>新增记录或刷新</td><td>记录模块、数据范围；“新增”埋点为创建动作</td></tr>
+            <tr><td>无搜索结果</td><td>列表局部</td><td>没有找到匹配结果</td><td>清空筛选</td><td>记录关键词、筛选组合；不展示新增操作</td></tr>
+            <tr><td>无权限</td><td>全页或受保护模块</td><td>暂无访问权限</td><td>联系管理员</td><td>记录路由、角色、无权限次数；不可伪造权限入口</td></tr>
+            <tr><td>页面不存在</td><td>全页</td><td>页面不存在</td><td>回到首页</td><td>记录来源路由；展示 404 状态码</td></tr>
+            <tr><td>系统异常</td><td>全页或模块级</td><td>系统开小差了</td><td>重新加载</td><td>展示 traceId；记录接口、错误码、页面</td></tr>
+            <tr><td>网络异常</td><td>全页 / 局部</td><td>网络连接异常</td><td>重新连接</td><td>识别离线与超时；恢复网络后可自动重试</td></tr>
+            <tr><td>加载中</td><td>页面 / 列表</td><td>正在加载…</td><td>无</td><td>超过 10 秒切换为超时异常；避免重复请求</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dev-note">实现建议：全页缺省统一使用页面容器组件；表格、单位树、双栏列表和下拉框内部使用局部缺省，避免整个页面被空状态覆盖。</div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>页面与弹窗概览 · 数字网格系统原型</title>
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/dev-pages.css">
+</head>
+<body class="dev-page">
+<div class="dev-shell">
+  <header class="dev-header">
+    <div class="dev-brand"><span class="dev-mark">网</span><span>数字网格系统 · 研发原型索引</span></div>
+    <nav class="dev-nav">
+      <a class="btn" href="index.html">返回总入口</a>
+      <a class="btn btn-primary" href="states.html">查看缺省页</a>
+    </nav>
+  </header>
+
+  <main class="dev-container">
+    <section class="dev-hero">
+      <span class="dev-eyebrow">DEVELOPMENT MAP</span>
+      <h1 class="dev-title">页面与弹窗开发概览</h1>
+      <p class="dev-sub">用于前端快速确认需要开发的页面、路由、平台范围、弹窗形态和责任模块。点击路由可直接进入对应原型页面。</p>
+      <div class="dev-state-jump">
+        <a href="#pages">页面清单</a>
+        <a href="#modals">弹窗清单</a>
+        <a href="states.html">缺省页规范</a>
+      </div>
+    </section>
+
+    <section class="dev-kpis">
+      <div class="dev-kpi"><div class="dev-kpi-num" id="business-count">0</div><div class="dev-kpi-label">业务页面</div></div>
+      <div class="dev-kpi"><div class="dev-kpi-num" id="modal-count">0</div><div class="dev-kpi-label">弹窗 / 确认框</div></div>
+      <div class="dev-kpi"><div class="dev-kpi-num" id="meta-count">0</div><div class="dev-kpi-label">研发辅助页面</div></div>
+      <div class="dev-kpi"><div class="dev-kpi-num">7</div><div class="dev-kpi-label">标准缺省页</div></div>
+    </section>
+
+    <section class="dev-section" id="pages">
+      <div class="dev-section-head">
+        <div>
+          <div class="dev-section-title">页面清单</div>
+          <div class="dev-section-sub">按平台、路由和核心能力拆分；共享登录页只统计一次。</div>
+        </div>
+        <div class="dev-toolbar">
+          <input id="page-search" class="dev-search" type="search" placeholder="搜索页面、路由或功能">
+          <button class="dev-filter is-active" type="button" data-filter="all">全部</button>
+          <button class="dev-filter" type="button" data-filter="jds">JDS</button>
+          <button class="dev-filter" type="button" data-filter="project">项目端</button>
+          <button class="dev-filter" type="button" data-filter="site">工地端</button>
+          <button class="dev-filter" type="button" data-filter="meta">辅助页</button>
+        </div>
+      </div>
+      <div class="dev-table-wrap">
+        <table class="dev-table">
+          <thead><tr><th>所属端</th><th>页面</th><th>路由</th><th>核心开发内容</th><th>弹窗数</th></tr></thead>
+          <tbody id="page-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="dev-section" id="modals">
+      <div class="dev-section-head">
+        <div>
+          <div class="dev-section-title">弹窗与二次确认清单</div>
+          <div class="dev-section-sub">包含表单弹窗、详情弹窗、审批弹窗、双栏关联用户、同步工地大弹窗和删除确认。</div>
+        </div>
+        <div class="dev-toolbar">
+          <input id="modal-search" class="dev-search" type="search" placeholder="搜索弹窗或所属页面">
+        </div>
+      </div>
+      <div class="dev-table-wrap">
+        <table class="dev-table">
+          <thead><tr><th>所属端</th><th>所属页面</th><th>弹窗 / 抽屉</th><th>形态</th><th>开发说明</th></tr></thead>
+          <tbody id="modal-body"></tbody>
+        </table>
+      </div>
+      <div class="dev-note">说明：需求说明面板作为全局抽屉复用，共覆盖 13 个业务页面，不重复计入页面弹窗数量。</div>
+    </section>
+  </main>
+</div>
+
+<script>
+const pages = [
+  { badge:'meta', platform:'研发辅助', name:'原型总入口', route:'index.html', feature:'平台选择、演示账号入口、研发索引入口', modals:0, meta:true },
+  { badge:'meta', platform:'研发辅助', name:'页面与弹窗概览', route:'overview.html', feature:'页面、弹窗、缺省页开发索引', modals:0, meta:true },
+  { badge:'meta', platform:'研发辅助', name:'缺省页集合', route:'states.html', feature:'空数据、无权限、异常、加载标准状态', modals:0, meta:true },
+  { badge:'jds', platform:'JDS', name:'管理平台登录', route:'jds.html#/login', feature:'JDS 内部账号登录与身份校验', modals:0 },
+  { badge:'jds', platform:'JDS', name:'用户管理', route:'jds.html#/jds/users', feature:'JDS 用户增删改查、关联项目/工地、角色分配', modals:4 },
+  { badge:'jds', platform:'JDS', name:'角色管理', route:'jds.html#/jds/roles', feature:'内部角色、权限树、双栏关联用户', modals:4 },
+  { badge:'jds', platform:'JDS', name:'项目管理', route:'jds.html#/jds/projects', feature:'项目主数据、工地关联、提交审批、审批记录', modals:4 },
+  { badge:'jds', platform:'JDS', name:'工地管理', route:'jds.html#/jds/sites', feature:'工地主数据、项目归属、审批与角色同步；审批人按工地审批菜单权限识别', modals:4 },
+  { badge:'common', platform:'公共', name:'Web 共用登录', route:'web.html#/login', feature:'JDS / 项目 / 工地账号登录与身份分流', modals:1 },
+  { badge:'project', platform:'项目端', name:'用户管理', route:'web.html#/project/users', feature:'项目用户、单位、角色、网格及删除校验', modals:2 },
+  { badge:'project', platform:'项目端', name:'角色管理', route:'web.html#/project/roles', feature:'默认/自定义角色、权限编辑、同步工地、管理员关联用户', modals:5 },
+  { badge:'project', platform:'项目端', name:'单位管理', route:'web.html#/project/units', feature:'单位树、上下级、启停、关联用户/角色/工地', modals:2 },
+  { badge:'project', platform:'项目端', name:'用户设置', route:'web.html#/project/settings', feature:'账号信息、JDS 端别切换、项目上下文切换', modals:1 },
+  { badge:'site', platform:'工地端', name:'用户管理', route:'web.html#/site/users', feature:'当前工地用户、角色、网格及删除校验', modals:2 },
+  { badge:'site', platform:'工地端', name:'角色管理', route:'web.html#/site/roles', feature:'工地管理员、项目同步角色、自定义角色、关联用户', modals:4 },
+  { badge:'site', platform:'工地端', name:'用户设置', route:'web.html#/site/settings', feature:'账号信息、JDS 端别切换、工地上下文切换', modals:1 }
+];
+
+const modals = [
+  ['jds','用户管理','新增 / 编辑 JDS 用户','中弹窗','名称、手机号、角色、项目/工地关联、性别'],
+  ['jds','用户管理','关联项目','中弹窗','多选项目，支持名称搜索'],
+  ['jds','用户管理','关联工地','中弹窗','按项目分组，支持名称搜索'],
+  ['jds','用户管理','删除用户确认','小弹窗','二次确认、逻辑删除、手机号释放'],
+  ['jds','角色管理','权限配置','中弹窗','菜单树、全选、半选、后续新增菜单'],
+  ['jds','角色管理','关联用户','大弹窗','左侧可关联、右侧已关联、双向移动'],
+  ['jds','角色管理','新增 / 编辑角色','中弹窗','客户端、菜单权限、备注'],
+  ['jds','角色管理','删除角色确认','小弹窗','内置角色与关联用户校验'],
+  ['jds','项目管理','新增 / 编辑项目','大弹窗','项目信息、关联工地、菜单、申请意见'],
+  ['jds','项目管理','项目详情','大弹窗','基本信息、申请意见、完整审批记录'],
+  ['jds','项目管理','项目审批','中弹窗','通过/驳回、意见必填'],
+  ['jds','项目管理','删除项目确认','小弹窗','关联工地和状态校验'],
+  ['jds','工地管理','新增 / 编辑工地','大弹窗','所属项目、状态、试用期、经纬度、权限'],
+  ['jds','工地管理','工地详情','大弹窗','工地信息、创建人、审批记录'],
+  ['jds','工地管理','工地审批','中弹窗','通过/驳回、意见必填、角色联动提示'],
+  ['jds','工地管理','删除工地确认','小弹窗','用户、待办和审批状态校验'],
+  ['common','Web 共用登录','选择进入项目 / 工地','超大弹窗','项目/工地双列表、搜索、逐项确认；列表项均可直接进入'],
+  ['project','项目用户','新增 / 编辑用户','中弹窗','单位、角色、性别；不维护网格和身份证'],
+  ['project','项目用户','删除用户确认','小弹窗','网格成员与待办校验'],
+  ['project','项目角色','权限配置','中弹窗','默认角色可编辑，管理员不可编辑'],
+  ['project','项目角色','关联用户','大弹窗','左右双栏、搜索、关联/取消关联'],
+  ['project','项目角色','同步至工地','大弹窗','工地搜索、多选、覆盖式同步'],
+  ['project','项目角色','新增 / 编辑角色','中弹窗','默认/自定义、单位、客户端、权限'],
+  ['project','项目角色','删除角色确认','小弹窗','关联用户与内置角色校验'],
+  ['project','单位管理','新增 / 编辑单位','中弹窗','一级/下级、名称、类型、关联工地'],
+  ['project','单位管理','删除单位确认','小弹窗','下级、用户、角色和工地关联校验'],
+  ['project','用户设置','退出登录确认','小弹窗','退出当前账号并清理会话'],
+  ['site','工地用户','新增 / 编辑用户','中弹窗','当前工地固定、角色、网格、身份信息'],
+  ['site','工地用户','删除用户确认','小弹窗','网格成员和待办校验'],
+  ['site','工地角色','权限配置','中弹窗','管理员/项目同步角色不可编辑'],
+  ['site','工地角色','关联用户','大弹窗','仅 JDS 用户可见，左右双栏管理'],
+  ['site','工地角色','新增 / 编辑角色','中弹窗','角色名称、别名、客户端、菜单权限'],
+  ['site','工地角色','删除角色确认','小弹窗','内置、项目同步、关联用户校验'],
+  ['site','工地设置','退出登录确认','小弹窗','退出当前账号并清理会话']
+];
+
+const badgeText = { jds:'JDS', project:'项目端', site:'工地端', common:'公共', meta:'辅助页' };
+const badgeClass = { jds:'jds', project:'project', site:'site', common:'common', meta:'meta' };
+let pageFilter = 'all';
+
+function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function routeLink(route, text) {
+  const href = route.includes('#') ? route : route;
+  return '<a class="dev-link" href="' + esc(href) + '">' + esc(text) + '</a>';
+}
+function renderPages() {
+  const kw = document.getElementById('page-search').value.trim().toLowerCase();
+  const rows = pages.filter(p => {
+    const filterOk = pageFilter === 'all' || p.badge === pageFilter;
+    const text = [p.platform,p.name,p.route,p.feature].join(' ').toLowerCase();
+    return filterOk && (!kw || text.includes(kw));
+  });
+  document.getElementById('page-body').innerHTML = rows.length ? rows.map(p => (
+    '<tr>' +
+      '<td><span class="dev-badge ' + badgeClass[p.badge] + '">' + badgeText[p.badge] + '</span></td>' +
+      '<td><strong>' + esc(p.name) + '</strong></td>' +
+      '<td>' + routeLink(p.route, p.route) + '</td>' +
+      '<td>' + esc(p.feature) + '</td>' +
+      '<td class="dev-count">' + p.modals + '</td>' +
+    '</tr>'
+  )).join('') : '<tr><td colspan="5" class="dev-empty">没有匹配的页面</td></tr>';
+}
+function renderModals() {
+  const kw = document.getElementById('modal-search').value.trim().toLowerCase();
+  const rows = modals.filter(m => {
+    const text = [m[0],m[1],m[2],m[3],m[4]].join(' ').toLowerCase();
+    return !kw || text.includes(kw);
+  });
+  document.getElementById('modal-body').innerHTML = rows.length ? rows.map(m => (
+    '<tr>' +
+      '<td><span class="dev-badge ' + badgeClass[m[0]] + '">' + badgeText[m[0]] + '</span></td>' +
+      '<td>' + esc(m[1]) + '</td>' +
+      '<td><strong>' + esc(m[2]) + '</strong></td>' +
+      '<td>' + esc(m[3]) + '</td>' +
+      '<td>' + esc(m[4]) + '</td>' +
+    '</tr>'
+  )).join('') : '<tr><td colspan="5" class="dev-empty">没有匹配的弹窗</td></tr>';
+}
+document.getElementById('business-count').textContent = pages.filter(p => !p.meta).length;
+document.getElementById('meta-count').textContent = pages.filter(p => p.meta).length;
+document.getElementById('modal-count').textContent = modals.length;
+document.getElementById('page-search').addEventListener('input', renderPages);
+document.getElementById('modal-search').addEventListener('input', renderModals);
+document.querySelectorAll('.dev-filter').forEach(btn => btn.addEventListener('click', function () {
+  document.querySelectorAll('.dev-filter').forEach(x => x.classList.remove('is-active'));
+  this.classList.add('is-active');
+  pageFilter = this.dataset.filter;
+  renderPages();
+}));
+renderPages(); renderModals();
+</script>
+</body>
+</html>
