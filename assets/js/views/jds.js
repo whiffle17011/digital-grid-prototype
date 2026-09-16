@@ -21,16 +21,16 @@ DG.views.jds = (function () {
     return S.list('sites').map(function (s) { return { value: s.id, label: s.name }; });
   }
 
-  /* 复制自定义角色：管理员和默认角色不参与复制，关联用户不复制，同名覆盖 */
+  /* 复制角色：管理员不复制，默认和自定义角色均可复制，关联用户不复制，同名覆盖角色配置但保留目标用户关联 */
   function copyCustomRoles(sourcePlatform, sourceId, targetPlatform, targetId) {
     var sourceKey = sourcePlatform === 'project' ? 'projectId' : 'siteId';
     var targetKey = targetPlatform === 'project' ? 'projectId' : 'siteId';
     var sourceRoles = S.list('roles').filter(function (r) {
-      return r.platform === sourcePlatform && r.type === '自定义' && r[sourceKey] === sourceId;
+      return r.platform === sourcePlatform && r.type !== '管理员' && r[sourceKey] === sourceId;
     });
     if (!sourceRoles.length) {
       sourceRoles = S.list('roles').filter(function (r) {
-        return r.platform === sourcePlatform && r.type === '自定义';
+        return r.platform === sourcePlatform && r.type !== '管理员';
       });
     }
     var copied = 0;
@@ -39,19 +39,29 @@ DG.views.jds = (function () {
         return r.platform === targetPlatform && r[targetKey] === targetId && r.name === src.name;
       })[0];
       var patch = {
-        name: src.name, alias: src.alias || '', type: '自定义', builtin: false,
+        name: src.name, alias: src.alias || '', type: src.type, builtin: false,
         platform: targetPlatform, client: src.client, unitId: src.unitId || '',
         unitName: src.unitName || '', remark: src.remark || '',
         menuIds: (src.menuIds || []).slice(),
         allSelectMenuIds: (src.allSelectMenuIds || []).slice(),
-        userIds: [], userCount: 0, canEdit: true, canDelete: true,
-        source: targetPlatform === 'site' ? '工地自定义' : '复制角色',
+        canEdit: true, canDelete: true,
+        source: src.type === '默认'
+          ? (targetPlatform === 'site' ? '项目同步' : '复制角色')
+          : (targetPlatform === 'site' ? '工地自定义' : '复制角色'),
+        synced: src.type === '默认' ? false : src.synced,
         updateTime: now()
       };
       patch[targetKey] = targetId;
       if (targetPlatform === 'site') patch.projectId = src.projectId || '';
-      if (existing) S.update('roles', existing.id, patch);
-      else S.add('roles', Object.assign({ id: S.nextId('roles', 'r'), createTime: now() }, patch));
+      if (existing) {
+        S.update('roles', existing.id, Object.assign({}, patch, {
+          userIds: (existing.userIds || []).slice(),
+          userCount: existing.userCount || 0,
+          createTime: existing.createTime || now()
+        }));
+      } else {
+        S.add('roles', Object.assign({ id: S.nextId('roles', 'r'), createTime: now(), userIds: [], userCount: 0 }, patch));
+      }
       copied += 1;
     });
     return copied;
@@ -698,10 +708,10 @@ DG.views.jds = (function () {
           { key: 'locateFreq', label: '获取定位频率', type: 'select', required: true, options: S.enums.locateFreq.map(function (f) { return { value: f, label: f }; }) },
           { key: 'copyFrom', label: '复制菜单', type: 'select', options: [{ value: '', label: '不复制' }].concat(projectOptions()), tip: '复制已有项目的菜单权限配置' },
           { key: 'menu', label: '菜单权限', type: 'tree', nodes: S.menuTree() },
-          { key: 'copyRolesFrom', label: '复制角色', type: 'select', options: [{ value: '', label: '不复制' }].concat(projectOptions()), tip: '仅复制源项目的自定义角色及权限；不复制管理员、默认角色和关联用户；同名角色覆盖' },
+          { key: 'copyRolesFrom', label: '复制角色', type: 'select', options: [{ value: '', label: '不复制' }].concat(projectOptions().filter(function (p) { return !isEdit || p.value !== row.id; })), tip: '复制源项目的默认和自定义角色及权限；不复制管理员和关联用户；同名角色覆盖配置但保留目标用户关联' },
           { key: 'applyOpinion', label: '申请意见', type: 'textarea', required: true, maxLength: 200, placeholder: '请输入申请意见（≤200 字）' },
           { key: 'remark', label: '备注', type: 'textarea', maxLength: 200, placeholder: '≤200 字' }
-        ].filter(function (f) { return !isEdit || f.key !== 'copyRolesFrom'; }),
+        ],
         onSubmit: function (v) {
           if (S.nameExists('projects', v.name, isEdit ? row.id : null)) return { name: '项目名称已存在' };
           if (!v.applyOpinion.trim()) return { applyOpinion: '请填写申请意见' };
@@ -721,7 +731,8 @@ DG.views.jds = (function () {
 
           if (isEdit) {
             S.update('projects', row.id, patch);
-            UI.toast('编辑成功', 'success');
+            var copiedEditRoles = v.copyRolesFrom ? copyCustomRoles('project', v.copyRolesFrom, 'project', row.id) : 0;
+            UI.toast('编辑成功' + (copiedEditRoles ? '，已复制 ' + copiedEditRoles + ' 个角色' : ''), 'success');
           } else {
             var id = S.nextId('projects', 'p');
             S.add('projects', Object.assign({
@@ -886,10 +897,10 @@ DG.views.jds = (function () {
           { key: 'lat', label: '纬度', type: 'input', placeholder: '如 30.4128' },
           { key: 'copyFrom', label: '复制菜单', type: 'select', options: [{ value: '', label: '不复制' }].concat(siteOptions()), tip: '复制已有工地的菜单权限配置' },
           { key: 'menu', label: '菜单权限', type: 'tree', nodes: S.menuTree() },
-          { key: 'copyRolesFrom', label: '复制角色', type: 'select', options: [{ value: '', label: '不复制' }].concat(siteOptions()), tip: '仅复制源工地的自定义角色及权限；不复制管理员、项目同步角色和关联用户；同名角色覆盖' },
+          { key: 'copyRolesFrom', label: '复制角色', type: 'select', options: [{ value: '', label: '不复制' }].concat(siteOptions().filter(function (s) { return !isEdit || s.value !== row.id; })), tip: '复制源工地的默认和自定义角色及权限；不复制管理员和关联用户；同名角色覆盖配置但保留目标用户关联' },
           { key: 'applyOpinion', label: '申请意见', type: 'textarea', required: true, maxLength: 200, placeholder: '请输入申请意见（≤200 字）' },
           { key: 'remark', label: '备注', type: 'textarea', maxLength: 200, placeholder: '≤200 字' }
-        ].filter(function (f) { return !isEdit || f.key !== 'copyRolesFrom'; }),
+        ],
         onSubmit: function (v) {
           if (S.nameExists('sites', v.name, isEdit ? row.id : null)) return { name: '工地名称已存在' };
           if (v.siteStatus === '试用' && !v.trialEnd) return { trialEnd: '请选择试用期限' };
@@ -911,7 +922,8 @@ DG.views.jds = (function () {
 
           if (isEdit) {
             S.update('sites', row.id, patch);
-            UI.toast('编辑成功', 'success');
+            var copiedEditSiteRoles = v.copyRolesFrom ? copyCustomRoles('site', v.copyRolesFrom, 'site', row.id) : 0;
+            UI.toast('编辑成功' + (copiedEditSiteRoles ? '，已复制 ' + copiedEditSiteRoles + ' 个角色' : ''), 'success');
           } else {
             var id = S.nextId('sites', 's');
             S.add('sites', Object.assign({

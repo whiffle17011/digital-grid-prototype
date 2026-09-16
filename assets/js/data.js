@@ -46,12 +46,6 @@ DG.data = (function () {
         { id: 'm-app-patrol', name: '巡检打卡', children: ops('m-app-patrol', true) },
         { id: 'm-app-msg', name: '消息', children: ops('m-app-msg', true) }
       ]
-    },
-    {
-      id: 'g-screen', name: '管理大屏', children: [
-        { id: 'm-sc-proj', name: '项目总览', children: ops('m-sc-proj', true) },
-        { id: 'm-sc-site', name: '工地总览', children: ops('m-sc-site', true) }
-      ]
     }
   ];
 
