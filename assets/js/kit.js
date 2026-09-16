@@ -347,6 +347,7 @@ DG.kit = (function () {
           h('span', { class: 'v' }, typeof it.v === 'string' ? it.v : it.v)
         ]);
       })),
+      opts.extra ? h('div', { class: 'mt-xl' }, opts.extra) : null,
       (opts.records && opts.records.length) ? h('div', { class: 'mt-xl' }, [
         h('div', { class: 'text-bold mb-lg', text: '审批记录' }),
         h('div', { class: 'timeline' }, opts.records.map(function (r) {

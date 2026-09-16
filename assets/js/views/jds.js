@@ -20,6 +20,68 @@ DG.views.jds = (function () {
   function siteOptions() {
     return S.list('sites').map(function (s) { return { value: s.id, label: s.name }; });
   }
+
+  /* 复制自定义角色：管理员和默认角色不参与复制，关联用户不复制，同名覆盖 */
+  function copyCustomRoles(sourcePlatform, sourceId, targetPlatform, targetId) {
+    var sourceKey = sourcePlatform === 'project' ? 'projectId' : 'siteId';
+    var targetKey = targetPlatform === 'project' ? 'projectId' : 'siteId';
+    var sourceRoles = S.list('roles').filter(function (r) {
+      return r.platform === sourcePlatform && r.type === '自定义' && r[sourceKey] === sourceId;
+    });
+    if (!sourceRoles.length) {
+      sourceRoles = S.list('roles').filter(function (r) {
+        return r.platform === sourcePlatform && r.type === '自定义';
+      });
+    }
+    var copied = 0;
+    sourceRoles.forEach(function (src) {
+      var existing = S.list('roles').filter(function (r) {
+        return r.platform === targetPlatform && r[targetKey] === targetId && r.name === src.name;
+      })[0];
+      var patch = {
+        name: src.name, alias: src.alias || '', type: '自定义', builtin: false,
+        platform: targetPlatform, client: src.client, unitId: src.unitId || '',
+        unitName: src.unitName || '', remark: src.remark || '',
+        menuIds: (src.menuIds || []).slice(),
+        allSelectMenuIds: (src.allSelectMenuIds || []).slice(),
+        userIds: [], userCount: 0, canEdit: true, canDelete: true,
+        source: targetPlatform === 'site' ? '工地自定义' : '复制角色',
+        updateTime: now()
+      };
+      patch[targetKey] = targetId;
+      if (targetPlatform === 'site') patch.projectId = src.projectId || '';
+      if (existing) S.update('roles', existing.id, patch);
+      else S.add('roles', Object.assign({ id: S.nextId('roles', 'r'), createTime: now() }, patch));
+      copied += 1;
+    });
+    return copied;
+  }
+
+  /* 将 menu_ids 转为按客户端分组的详情展示 */
+  function menuDetailNode(menuIds) {
+    var selected = menuIds || [];
+    var groups = [];
+    S.menuTree().forEach(function (group) {
+      var items = [];
+      (group.children || []).forEach(function (node) {
+        var selectedNode = selected.indexOf(node.id) >= 0;
+        var selectedOps = (node.children || []).filter(function (op) { return selected.indexOf(op.id) >= 0; });
+        if (!selectedNode && !selectedOps.length) return;
+        items.push(h('div', { class: 'menu-detail-item' }, [
+          h('span', { class: 'menu-detail-name', text: node.name }),
+          h('span', { class: 'menu-detail-ops', text: selectedNode ? '全部操作' : selectedOps.map(function (op) { return op.name; }).join('、') })
+        ]));
+      });
+      if (items.length) groups.push(h('div', { class: 'menu-detail-group' }, [
+        h('div', { class: 'menu-detail-client', text: group.name }),
+        h('div', { class: 'menu-detail-list' }, items)
+      ]));
+    });
+    return h('div', { class: 'menu-detail' }, [
+      h('div', { class: 'text-bold mb-lg', text: '菜单详情' }),
+      groups.length ? h('div', { class: 'menu-detail-groups' }, groups) : h('div', { class: 'text-sm muted', text: '未配置菜单权限' })
+    ]);
+  }
   /* 关联项目 / 工地弹窗（JDS 用户字段）—— 左右两个并行列表 */
   function openProjectSiteModal(row, onChange) {
     var projects = S.list('projects');
@@ -626,9 +688,9 @@ DG.views.jds = (function () {
         docKey: 'jds/projects',
         values: isEdit ? {
           code: row.code, name: row.name, siteIds: row.siteIds || [],
-          locateFreq: row.locateFreq, menu: row.menuIds || [], copyFrom: row.copyFrom || '',
+          locateFreq: row.locateFreq, menu: row.menuIds || [], copyFrom: row.copyFrom || '', copyRolesFrom: row.copyRolesFrom || '',
           applyOpinion: row.applyOpinion || '', remark: row.remark || ''
-        } : { locateFreq: '5分钟', siteIds: [], menu: [] },
+        } : { locateFreq: '5分钟', siteIds: [], menu: [], copyRolesFrom: '' },
         fields: [
           { key: 'code', label: '项目编号', type: 'input', tip: '编号由系统生成，不可修改' },
           { key: 'name', label: '项目名称', type: 'input', required: true, maxLength: 20, placeholder: '≤20 字', tip: '项目名称全局唯一' },
@@ -636,9 +698,10 @@ DG.views.jds = (function () {
           { key: 'locateFreq', label: '获取定位频率', type: 'select', required: true, options: S.enums.locateFreq.map(function (f) { return { value: f, label: f }; }) },
           { key: 'copyFrom', label: '复制菜单', type: 'select', options: [{ value: '', label: '不复制' }].concat(projectOptions()), tip: '复制已有项目的菜单权限配置' },
           { key: 'menu', label: '菜单权限', type: 'tree', nodes: S.menuTree() },
+          { key: 'copyRolesFrom', label: '复制角色', type: 'select', options: [{ value: '', label: '不复制' }].concat(projectOptions()), tip: '仅复制源项目的自定义角色及权限；不复制管理员、默认角色和关联用户；同名角色覆盖' },
           { key: 'applyOpinion', label: '申请意见', type: 'textarea', required: true, maxLength: 200, placeholder: '请输入申请意见（≤200 字）' },
           { key: 'remark', label: '备注', type: 'textarea', maxLength: 200, placeholder: '≤200 字' }
-        ],
+        ].filter(function (f) { return !isEdit || f.key !== 'copyRolesFrom'; }),
         onSubmit: function (v) {
           if (S.nameExists('projects', v.name, isEdit ? row.id : null)) return { name: '项目名称已存在' };
           if (!v.applyOpinion.trim()) return { applyOpinion: '请填写申请意见' };
@@ -667,7 +730,8 @@ DG.views.jds = (function () {
               status: '待审批', creator: '王宇', createTime: now(),
               approveRecords: [{ time: now(), action: '提交申请', user: '王宇' }]
             }, patch));
-            UI.toast('新增成功，已提交审批', 'success');
+            var copiedRoles = v.copyRolesFrom ? copyCustomRoles('project', v.copyRolesFrom, 'project', id) : 0;
+            UI.toast('新增成功，已提交审批' + (copiedRoles ? '，已复制 ' + copiedRoles + ' 个自定义角色' : ''), 'success');
           }
           api.reload();
         }
@@ -692,6 +756,7 @@ DG.views.jds = (function () {
           { k: '备注', v: row.remark || '—', full: true },
           { k: '申请意见', v: row.applyOpinion || '—', full: true }
         ],
+        extra: menuDetailNode(row.menuIds || []),
         records: row.approveRecords || []
       });
     }
@@ -802,9 +867,9 @@ DG.views.jds = (function () {
           code: row.code, name: row.name, similarName: row.similarName,
           projectId: row.projectId, siteStatus: row.siteStatus, trialEnd: row.trialEnd,
           locateFreq: row.locateFreq, lng: row.lng, lat: row.lat,
-          menu: row.menuIds || [], copyFrom: row.copyFrom || '',
+          menu: row.menuIds || [], copyFrom: row.copyFrom || '', copyRolesFrom: row.copyRolesFrom || '',
           applyOpinion: row.applyOpinion || '', remark: row.remark || ''
-        } : { siteStatus: '正式', locateFreq: '5分钟', menu: [] },
+        } : { siteStatus: '正式', locateFreq: '5分钟', menu: [], copyRolesFrom: '' },
         fields: [
           { key: 'code', label: '工地编号', type: 'input', tip: '编号由系统生成，不可修改' },
           { key: 'name', label: '工地名称', type: 'input', required: true, maxLength: 10, placeholder: '≤10 字', tip: '工地名称全局唯一' },
@@ -821,9 +886,10 @@ DG.views.jds = (function () {
           { key: 'lat', label: '纬度', type: 'input', placeholder: '如 30.4128' },
           { key: 'copyFrom', label: '复制菜单', type: 'select', options: [{ value: '', label: '不复制' }].concat(siteOptions()), tip: '复制已有工地的菜单权限配置' },
           { key: 'menu', label: '菜单权限', type: 'tree', nodes: S.menuTree() },
+          { key: 'copyRolesFrom', label: '复制角色', type: 'select', options: [{ value: '', label: '不复制' }].concat(siteOptions()), tip: '仅复制源工地的自定义角色及权限；不复制管理员、项目同步角色和关联用户；同名角色覆盖' },
           { key: 'applyOpinion', label: '申请意见', type: 'textarea', required: true, maxLength: 200, placeholder: '请输入申请意见（≤200 字）' },
           { key: 'remark', label: '备注', type: 'textarea', maxLength: 200, placeholder: '≤200 字' }
-        ],
+        ].filter(function (f) { return !isEdit || f.key !== 'copyRolesFrom'; }),
         onSubmit: function (v) {
           if (S.nameExists('sites', v.name, isEdit ? row.id : null)) return { name: '工地名称已存在' };
           if (v.siteStatus === '试用' && !v.trialEnd) return { trialEnd: '请选择试用期限' };
@@ -854,7 +920,8 @@ DG.views.jds = (function () {
               approveStatus: '待审批', creator: '王宇', createTime: now(),
               approveRecords: [{ time: now(), action: '提交申请', user: '王宇' }]
             }, patch));
-            UI.toast('新增成功，已提交审批', 'success');
+            var copiedSiteRoles = v.copyRolesFrom ? copyCustomRoles('site', v.copyRolesFrom, 'site', id) : 0;
+            UI.toast('新增成功，已提交审批' + (copiedSiteRoles ? '，已复制 ' + copiedSiteRoles + ' 个自定义角色' : ''), 'success');
           }
           api.reload();
         }
@@ -883,6 +950,7 @@ DG.views.jds = (function () {
           { k: '备注', v: row.remark || '—', full: true },
           { k: '申请意见', v: row.applyOpinion || '—', full: true }
         ],
+        extra: menuDetailNode(row.menuIds || []),
         records: row.approveRecords || []
       });
     }
