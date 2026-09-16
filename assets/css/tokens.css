@@ -1,0 +1,85 @@
+/* ===========================================================
+   数字网格系统 · 设计变量（Design Tokens）
+   依据：完整需求文档 §5 全局设计规范
+   =========================================================== */
+:root {
+  /* ---- 主色 ---- */
+  --color-primary: #1677FF;
+  --color-primary-hover: #4096FF;
+  --color-primary-active: #0958D9;
+  --color-primary-bg: #E6F4FF;          /* 浅色侧栏选中底 / 主色浅底 */
+  --color-primary-border: #91CAFF;
+
+  /* ---- 辅助色 ---- */
+  --color-success: #389E0D;
+  --color-success-bg: #F0F9EB;
+  --color-warning: #D48806;
+  --color-warning-bg: #FDF6EC;
+  --color-danger: #FF4D4F;
+  --color-danger-hover: #FF7875;
+  --color-danger-active: #D9363E;
+  --color-danger-bg: #FEF0F0;
+  --color-info: #90989F;
+
+  /* ---- 文字 ---- */
+  --text-1: #1F1F29;                    /* 主文本 */
+  --text-2: #606266;                    /* 次文本 / 表头 */
+  --text-3: #90989F;                    /* 辅助文本 / 图标 */
+  --text-placeholder: #C0C4CC;          /* placeholder */
+  --text-disabled: #C0C4CC;
+  --text-inverse: #FFFFFF;              /* 深色底上的文字 */
+  --text-link: #1677FF;                 /* 操作列链接 */
+
+  /* ---- 边框 / 分割 ---- */
+  --border: #DCDFE6;
+  --border-light: #E5E6EB;
+  --border-dark: #4E5969;
+
+  /* ---- 背景 ---- */
+  --bg-page: #F5F7FA;                   /* 内容区底色 */
+  --bg-card: #FFFFFF;
+  --bg-hover: #F5F7FA;
+  --bg-disabled: #F5F7FA;
+  --sider-dark: #001529;                /* JDS 深色侧栏 */
+  --sider-dark-hover: rgba(255,255,255,.08);
+  --sider-dark-active: #1677FF;
+  --sider-light: #FFFFFF;               /* 项目端 / 工地端 浅色侧栏 */
+
+  /* ---- 尺寸 ---- */
+  --sider-w: 240px;
+  --header-h: 56px;
+  --control-h: 32px;                    /* 按钮 / 输入框 高 */
+  --row-h: 48px;                        /* 表格行高 */
+  --radius-card: 8px;                   /* 卡片圆角 */
+  --radius-control: 6px;                /* 按钮 / 输入圆角 */
+  --radius-sm: 4px;
+
+  /* ---- 间距 ---- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+
+  /* ---- 字号 ---- */
+  --font-title: 16px;                   /* 卡片标题 / 弹窗标题 */
+  --font-base: 14px;                    /* 正文 / 表格 */
+  --font-sm: 13px;
+  --font-xs: 12px;                      /* 辅助说明 */
+
+  /* ---- 字体 ---- */
+  --font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont,
+                "PingFang SC", "Microsoft YaHei", "Helvetica Neue",
+                Arial, sans-serif;
+
+  /* ---- 阴影 ---- */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, .04);
+  --shadow-dropdown: 0 6px 16px rgba(0, 0, 0, .08), 0 3px 6px -4px rgba(0, 0, 0, .12);
+  --shadow-modal: 0 8px 28px rgba(0, 21, 41, .18);
+
+  /* ---- 层级 ---- */
+  --z-dropdown: 1000;
+  --z-modal: 1100;
+  --z-toast: 1200;
+}
