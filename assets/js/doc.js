@@ -14,6 +14,15 @@ DG.doc = (function () {
   function FLOW(n, name, steps, note) { return { n: n, name: name, steps: steps, note: note }; }
   function STEP(title, text, type, branches) { return { title: title, text: text, type: type, branches: branches }; }
 
+  var commonAudit = [
+    { n: '1', label: '创建时间', field: 'create_time', text: '记录新增或审批生成的业务记录首次落库时间，由系统自动写入，不允许前端手工修改；列表需要展示时使用统一时间格式。' },
+    { n: '2', label: '创建人员', field: 'create_by', text: '记录创建该数据的用户标识，原型列表可显示为创建人姓名；来自当前登录用户，不接受前端伪造，编辑时不可修改。' },
+    { n: '3', label: '更新时间', field: 'update_time', text: '记录最近一次业务字段、权限、状态或关联关系变更时间；新增时与创建时间一致，后续每次有效修改自动刷新。' },
+    { n: '4', label: '更新人员', field: 'update_by', text: '记录最近一次执行有效修改的用户标识；审批、启用停用、权限保存、关联用户等操作均需留痕，编辑时不可手工维护。' },
+    { n: '5', label: '逻辑删除', field: 'del_flag', text: '0 表示正常，1 表示逻辑删除；删除操作不物理清除历史数据，有关联业务数据时应先通过业务校验阻止删除。' },
+    { n: '6', label: '审计留痕', field: 'operation_log', text: '新增、编辑、删除、审批、权限配置、复制和同步等敏感操作应额外记录操作人、操作时间、业务对象和结果，供追溯与排查。' }
+  ];
+
   var doc = {
     /* ================= 数字化管理平台（JDS） ================= */
 
@@ -95,7 +104,8 @@ DG.doc = (function () {
         L('2', '角色类型新增时选择，保存后不可修改（界面置灰）。'),
         L('3', '权限变更后用户刷新页面生效。'),
         L('4', '角色名在同一工地/项目内唯一；(role_id + site_id/project_id) 为授权唯一键。'),
-        L('5', '关联用户弹窗分为左右双栏：左侧为可关联用户，右侧为已关联用户，支持搜索和双向移动。')
+        L('5', '关联用户弹窗分为左右双栏：左侧为可关联用户，右侧为已关联用户，支持搜索和双向移动。'),
+        L('6', '内置角色的操作列仅保留「关联用户」，不显示权限配置、编辑和删除；关联用户保存 userIds、userCount 和更新时间。')
       ],
       flows: [
         FLOW('P1', '新增内部角色', [
@@ -659,6 +669,10 @@ DG.doc = (function () {
       var d = doc[key];
       if (!d || !d.fields || !d.fields[fieldKey]) return null;
       return d.fields[fieldKey];
+    },
+    audit: function (key) {
+      var d = doc[key];
+      return (d && d.audit) ? d.audit : commonAudit;
     }
   };
 })();

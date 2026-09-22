@@ -652,15 +652,19 @@ DG.views.jds = (function () {
         { title: '关联用户', width: 110, render: function (r) { return (r.userCount || 0) + ' 人'; } },
         { title: '更新时间', key: 'updateTime', width: 160 },
         {
-          title: '操作', width: 260,
+          title: '操作', width: 220,
           render: function (r) {
+            if (r.builtin) {
+              return KIT.ops([
+                { text: '关联用户', onClick: function () { openBindUsers(r); } }
+              ]);
+            }
             return KIT.ops([
               { text: '权限配置', onClick: function () { openPerm(r); } },
               { text: '关联用户', onClick: function () { openBindUsers(r); } },
               { text: '编辑', onClick: function () { openForm(r); } },
               {
                 text: '删除', danger: true, onClick: function () {
-                  if (r.builtin) { UI.toast('内置角色不可删除', 'warning'); return; }
                   KIT.confirmDelete('角色', function () {
                     S.remove('roles', r.id); UI.toast('删除成功', 'success'); api.reload();
                   }, { name: r.name });
