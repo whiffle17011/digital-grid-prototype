@@ -194,8 +194,18 @@ DG.store = (function () {
   }
 
   /* 手机号全局唯一校验（PRD-02） */
+  function phoneConflict(phone, excludeId) {
+    var existing = list('users').filter(function (u) {
+      return u.phone === phone && u.id !== excludeId;
+    })[0];
+    if (!existing) return null;
+    if (existing.userType === 1 || existing.platform === 'jds') {
+      return { type: 'jds', message: '该手机号已存在JDS账号' };
+    }
+    return { type: 'grid', message: '该手机号已存在数字网格用户' };
+  }
   function phoneExists(phone, excludeId) {
-    return list('users').some(function (u) { return u.phone === phone && u.id !== excludeId; });
+    return !!phoneConflict(phone, excludeId);
   }
 
   /* 名称唯一校验（项目/工地全局唯一 PRD-03，单位项目内唯一 PRD-04） */
@@ -245,6 +255,7 @@ DG.store = (function () {
     sortRoles: sortRoles,
     usersByPlatform: usersByPlatform,
     phoneExists: phoneExists,
+    phoneConflict: phoneConflict,
     nameExists: nameExists,
     loginByPhone: loginByPhone
   };

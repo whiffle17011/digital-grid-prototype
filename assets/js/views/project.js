@@ -54,7 +54,8 @@ DG.views.project = (function () {
           { key: 'gender', label: '性别', type: 'radio', options: [{ value: '男', label: '男' }, { value: '女', label: '女' }] }
         ],
         onSubmit: function (v) {
-          if (S.phoneExists(v.phone, isEdit ? row.id : null)) return { phone: '该手机号已存在' };
+          var conflict = S.phoneConflict(v.phone, isEdit ? row.id : null);
+          if (conflict) return { phone: conflict.message };
           var patch = {
             name: v.name, alias: v.alias, phone: v.phone,
             unitId: v.unitId, unitName: S.unitName(v.unitId),
