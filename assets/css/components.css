@@ -631,7 +631,8 @@
 }
 .doc-num-rule { background: #FFF1F0; color: var(--color-danger); }
 .doc-item-body { flex: 1; min-width: 0; }
-.doc-item-label { font-size: 13px; font-weight: 500; color: var(--text-1); margin-bottom: 2px; }
+.doc-item-label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--text-1); margin-bottom: 2px; }
+.doc-field-code { padding: 1px 5px; border-radius: 4px; background: var(--bg-page); color: var(--text-3); font-size: 11px; font-family: Consolas, monospace; font-weight: 400; }
 .doc-item-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
 .doc-empty { padding: 24px; text-align: center; color: var(--text-3); font-size: 13px; }
 .doc-flow { margin-bottom: 18px; padding: 14px; border: 1px solid var(--border-light); border-radius: 8px; background: #FCFDFF; }

@@ -494,11 +494,14 @@ DG.kit = (function () {
 
     function addItems(container, items, kind) {
       (items || []).forEach(function (it) {
-        var num = kind === 'field' ? it.n : (kind === 'rule' ? 'R' + it.n : (kind === 'exception' ? 'X' + it.n : 'L' + it.n));
+        var num = kind === 'field' ? it.n : (kind === 'audit' ? 'A' + it.n : (kind === 'rule' ? 'R' + it.n : (kind === 'exception' ? 'X' + it.n : 'L' + it.n)));
         container.appendChild(h('div', { class: 'doc-item' }, [
           h('span', { class: 'doc-num' + (kind === 'rule' || kind === 'exception' ? ' doc-num-rule' : ''), text: num }),
           h('div', { class: 'doc-item-body' }, [
-            kind === 'field' && it.label ? h('div', { class: 'doc-item-label', text: it.label }) : null,
+            (kind === 'field' || kind === 'audit') && it.label ? h('div', { class: 'doc-item-label' }, [
+              h('span', { text: it.label }),
+              kind === 'audit' && it.field ? h('code', { class: 'doc-field-code', text: it.field }) : null
+            ]) : null,
             h('div', { class: 'doc-item-text', text: it.help || it.text })
           ])
         ]));
@@ -514,6 +517,10 @@ DG.kit = (function () {
       h('div', { class: 'doc-summary-card' }, [h('span', { text: '主要入口' }), h('strong', { text: summary.entry || '—' })]),
       h('div', { class: 'doc-summary-card' }, [h('span', { text: '数据依赖' }), h('strong', { text: summary.dependencies || '—' })])
     ]));
+
+    /* 审计字段 */
+    var auditList = (DG.doc && DG.doc.audit) ? DG.doc.audit(routeKey) : [];
+    if (auditList && auditList.length) addItems(addSection('doc-audit', '审计字段', auditList.length), auditList, 'audit');
 
     /* 字段说明 */
     var fieldList = doc.fields ? Object.keys(doc.fields).map(function (k) { return doc.fields[k]; }) : [];
