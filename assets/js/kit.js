@@ -40,7 +40,8 @@ DG.kit = (function () {
           options: f.options || [],
           multiple: f.type === 'multiselect',
           placeholder: f.placeholder || '请选择',
-          width: '100%'
+          width: '100%',
+          onChange: function () { applyShowIf(); }
         });
         controls[f.key] = { get: function () { return ctrl.getValue(); }, el: ctrl };
 
